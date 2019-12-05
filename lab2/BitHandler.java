@@ -1,17 +1,5 @@
-import java.lang.Character.*;
-
-/**
- * This class implements a BitHandler that receives a string of
- * 1s and 0s from a BitListener and sends that information along to
- * the LightPanel it is associated with which in turn broadcasts it
- * to the rest of the LightPanels connected to the LightSystem
- *
- * @author: Professor Norman
- * @author: Quentin Barnes
- * @author: Ty Vredeveld
- */
 public class BitHandler extends Thread {
-	public static final int HALFPERIOD = 5;
+	public static final int HALFPERIOD = 50;
 
 	private static final String SILENCE = "SILENCE";
 	private static final String EXPECT_ZERO = "EXPECT_ZERO";
@@ -24,34 +12,15 @@ public class BitHandler extends Thread {
 	private BitListener listener;
 	private String state = SILENCE;
 
-	/**
-	 * Default constructor that creates a BitHandler using
-	 * localhost and the default port
-	 */
 	public BitHandler() {
 		this("localhost", LightSystem.DEFAULT_PORT);
 	}
 
-	/**
-	 * Explicit constructor that creates a LightPanel using
-	 * a given host name and port, then starts running the BitHandler
-	 *
-	 * @param host host the LightSystem is running on that the
-	 *             LightPanel connects to
-	 * @param port port the LightSystem is running on that the
-	 *             LightPanel connects to
-	 */
 	public BitHandler(String host, int port) {
 		panel = new LightPanel(host, port);
 		start();
 	}
 
-	/**
-	 * Wait a given amount of time; used to distinguish between
-	 * bits that are sent and received
-	 *
-	 * @param millisenconds amount of time to pause the thread
-	 */
 	public static void pause(int milliseconds) {
 		try {
 			Thread.sleep(milliseconds);
@@ -65,73 +34,57 @@ public class BitHandler extends Thread {
 	/**
 	 * Turn the light system on (if it isn't already), then wait half a period. Then
 	 * turn the light off, for half a period.
-	 * 
-	 * @throws CollisionException when a collision occurs
 	 */
 	public void broadcastZero() throws CollisionException {
-		// System.out.println(getID() + " Broadcasting: 0");
-			if (!panel.isOn()) {
-				panel.switchOn();
-			}
-			pause(HALFPERIOD);
-			if (!panel.isOn()) {
-				throw new CollisionException();
-			}
-			panel.switchOff();
-			pause(HALFPERIOD);
-			if (panel.isOn()) {
-				throw new CollisionException();
-			}
+		if (!panel.isOn()) {
+			panel.switchOn();
+		}
+		pause(HALFPERIOD);
+		if (!panel.isOn()) {
+			throw new CollisionException();
+		}
+		panel.switchOff();
+		pause(HALFPERIOD);
+		if (panel.isOn()) {
+			throw new CollisionException();
+		}
 	}
 
 	/**
 	 * Turn the light system off (if it isn't already), then wait half a period.
 	 * Then turn the light on, for half a period.
-	 * 
-	 * @throws CollisionException when a collision occurs
 	 */
 	public void broadcastOne() throws CollisionException {
-		// System.out.println(getID() + " Broadcasting: 1");
-			if (panel.isOn()) {
-				panel.switchOff();
-			}
-			pause(HALFPERIOD);
-			if (panel.isOn()) {
-				throw new CollisionException();
-			}
-			panel.switchOn();
-			pause(HALFPERIOD);
-			if (!panel.isOn()) {
-				throw new CollisionException();
-			}
+		if (panel.isOn()) {
+			panel.switchOff();
+		}
+		pause(HALFPERIOD);
+		if (panel.isOn()) {
+			throw new CollisionException();
+		}
+		panel.switchOn();
+		pause(HALFPERIOD);
+		if (!panel.isOn()) {
+			throw new CollisionException();
+		}
 	}
 
 	/**
 	 * Given a string of bits (0s and 1s), send each bit using broadcastOne/Zero().
 	 * Build up a string of successfully sent bits (called "broadcasted"). Switch
 	 * the light off when done.
-	 * 
-	 * @throws CollisionException when a collision occurs
 	 */
 	public void broadcast(String bits) throws CollisionException {
 		for (int i = 0; i < bits.length(); i++) {
 			if (bits.charAt(i) == '0') {
 				broadcastZero();
-			} else if (bits.charAt(i) == '1') {
-				broadcastOne();
 			} else {
-				// Shouldnt get here
-				System.out.println("Error broadcasting");
+				broadcastOne();
 			}
 		}
 		panel.switchOff();
 	}
 
-	/**
-	 * Return the ID of the LightPanel the BitHandler is tied to
-	 *
-	 * @return the ID of the LightPanel the BitHandler is associated with
-	 */
 	public String toString() {
 		return panel.toString();
 	}
@@ -225,39 +178,18 @@ public class BitHandler extends Thread {
 		}
 	}
 
-	/**
-	 * Explicitly set the reference to a given BitListener
-	 *
-	 * @param l BitListener we want to reference
-	 */
 	public void setListener(BitListener l) {
 		listener = l;
 	}
 
-	/**
-	 * Returns if the listener is not receiving anything
-	 *
-	 * @return if the BitListener's state == SILENCE
-	 */
 	public boolean isSilent() {
 		return state.equals(SILENCE);
 	}
 
-	/**
-	 * Returns the ID of the LightPanel (in integer form)
-	 *
-	 * @return the associated LightPanel ID (integer)
-	 */
 	public int getID() {
 		return panel.getID();
 	}
 
-	/**
-	 * Notify the user that the BitHandler has received bits
-	 * from somewhere
-	 *
-	 * @param bits the string of 0s and 1s that the BitHandler received
-	 */
 	private void notifyReceived(final String bits) {
 		if (listener == null)
 			return;
@@ -266,6 +198,6 @@ public class BitHandler extends Thread {
 				listener.bitsReceived(BitHandler.this, bits);
 			}
 		}.start();
-		System.out.println(this + " received bits: " + bits);
+		// System.out.println(this + " received bits: " + bits);
 	}
 }

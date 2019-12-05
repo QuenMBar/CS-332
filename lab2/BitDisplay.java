@@ -1,25 +1,11 @@
 import java.awt.event.*;
 import javax.swing.*;
 
-/**
- * This class implements a BitDisplay that acts as a UI
- * for the BitHandler and allows users to input a series of 1s
- * and 0s to be broadcast to all LightPanels in the LightSystem
- * and also can receive broadcasted messages and display them
- *
- * @author: Professor Norman
- */
 public class BitDisplay implements ActionListener, BitListener {
 	private BitHandler handler;
 	private JTextField receiveField;
 	private JTextField sendField;
 
-	/**
-	 * Explicit constructor that creates the UI elements for the BitDisplay and
-	 * connects the BitDisplay to the given BitHandler
-	 *
-	 * @param handler BitHandler the BitDisplay references and is connected to
-	 */
 	public BitDisplay(BitHandler handler) {
 		this.handler = handler;
 
@@ -30,6 +16,7 @@ public class BitDisplay implements ActionListener, BitListener {
 		receiveField.setEditable(false);
 		frame.getContentPane().add(receiveField);
 
+		frame.getContentPane().add(new JLabel("Type in 0s and 1s below: hit enter to send"));
 		sendField = new JTextField(20);
 		sendField.addActionListener(this);
 		frame.getContentPane().add(sendField);
@@ -39,31 +26,21 @@ public class BitDisplay implements ActionListener, BitListener {
 		handler.setListener(this);
 	}
 
-	/**
-	 * Turn the light system on (if it isn't already), then wait half a period. Then
-	 * turn the light off, for half a period.
-	 */
 	public void actionPerformed(ActionEvent e) {
 		new Thread() {
 			public void run() {
 				try {
 					handler.broadcast(sendField.getText());
-					// System.out.println("actionPerformed: done sending " + sendField.getText());
-				} catch (CollisionException x) {
+				} catch (CollisionException e) {
 					receiveField.setText("Collision!");
 				}
+
+				// System.out.println("actionPerformed: done sending " + sendField.getText());
 			}
 		}.start();
 		sendField.selectAll();
 	}
 
-	/**
-	 * Called by the BitHandler when it receives bits
-	 * and used to show the string of bits it has received
-	 *
-	 * @param h the BitHandler this BitDisplay is associated with
-	 * @param bits the string of 1s and 0s that it received
-	 */
 	public void bitsReceived(BitHandler h, String bits) {
 		receiveField.setText(bits);
 	}
